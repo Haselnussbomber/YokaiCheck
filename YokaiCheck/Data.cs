@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace YokaiCheck;
 
 public readonly record struct MinionInfo(uint Minion, uint Achievement, uint Count, uint Item);
@@ -10,7 +8,7 @@ public static class Data
     public static int MINION_COUNT_ALL_13 = 510;
     public static int MINION_COUNT_ALL_17 = 870;
     public static int MINION_ACHIEVEMENT_ALL_17 = 2612;
-    public static List<MinionInfo> MINION_INFO_TABLE = [
+    public static MinionInfo[] MINION_INFO_TABLE = [
         new (200, 1513, 447, 15195),
         new (201, 1514, 448, 15196),
         new (202, 1515, 449, 15197),
@@ -33,7 +31,7 @@ public static class Data
     public static int WEAPON_ACHIEVEMENT_ALL_17 = 2617;
     public static int WEAPON_COUNT_ALL_13 = 489;
     public static int WEAPON_COUNT_ALL_17 = 875;
-    public static List<WeaponInfo> WEAPON_INFO_TABLE = [
+    public static WeaponInfo[] WEAPON_INFO_TABLE = [
         new (15208, 15221, 1535, 485, 15177),
         new (15210, 0, 1526, 476, 15168),
         new (15214, 0, 1536, 486, 15178),
