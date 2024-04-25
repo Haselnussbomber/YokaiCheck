@@ -1,0 +1,58 @@
+{
+  "Plugin.DisplayName": {
+    "en": "Yo-kai Check"
+  },
+  "CommandHandlerHelpMessage": {
+    "en": "Open Window",
+    "de": "Öffne Fenster"
+  },
+  "Config.CouldNotLoadConfigNotification": {
+    "en": "Could not load the configuration file. Creating a new one.",
+    "de": "Die Konfigurationsdatei konnte nicht geladen werden. Es wird eine neue erstellt."
+  },
+
+  "TitleBarButton.ToggleConfig.Tooltip.OpenConfig": {
+    "en": "Open Configuration",
+    "de": "Konfiguration öffnen"
+  },
+  "TitleBarButton.ToggleConfig.Tooltip.CloseConfig": {
+    "en": "Close Configuration",
+    "de": "Konfiguration schließen"
+  },
+
+  "MainWindow.AchievementsNotLoaded": {
+    "en": "Achievements not loaded!",
+    "de": "Errungenschaften nicht geladen!"
+  },
+  "MainWindow.OpenAchievementsButton.Label": {
+    "en": "Open Achievements",
+    "de": "Errungenschaften öffnen"
+  },
+  "MainWindow.OpenYokaiMedalliumButton.Label": {
+    "en": "Open the Yo-kai Medallium",
+    "de": "Yo-kai-Medaillium öffnen"
+  },
+  "MainWindow.YKWTable.ColumnHeader.Minion": {
+    "en": "Minion",
+    "de": "Begleiter"
+  },
+  "MainWindow.YKWTable.ColumnHeader.Weapon": {
+    "en": "Weapon",
+    "de": "Waffe"
+  },
+  "MainWindow.YKWTable.ColumnHeader.LegendaryMedals": {
+    "en": "Legendary Medals",
+    "de": "Legendäre Medallien"
+  },
+  "MainWindow.CompletionCheckmark.Tooltip.Collected": {
+    "en": "Collected",
+    "de": "Gesammelt"
+  },
+  "MainWindow.CompletionCheckmark.Tooltip.NotCollected": {
+    "en": "Not collected",
+    "de": "Nicht gesammelt"
+  },
+  "MainWindow.IncompleteWeaponMedallionCounter": {
+    "en": "{0} / 10"
+  }
+}

@@ -1,0 +1,8 @@
+name: Yo-kai Check
+author: Haselnussbomber
+punchline: Tracking assistant for Yo-kai Watch rewards
+repo_url: https://github.com/Haselnussbomber/YokaiCheck
+icon_url: https://raw.githubusercontent.com/Haselnussbomber/YokaiCheck/main/YokaiCheck/Assets/Icon.png
+description: Yo-kai Check is a small plugin to assist you in tracking the rewards of the Yo-kai Watch event.
+load_required_state: 1
+can_unload_async: true
