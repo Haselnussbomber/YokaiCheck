@@ -1,7 +1,6 @@
 using System.Numerics;
 using Dalamud.Game.Text;
 using Dalamud.Interface;
-using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using FFXIVClientStructs.FFXIV.Client.Game;
@@ -100,7 +99,8 @@ public unsafe class MainWindow : Window
             ImGui.TableNextColumn();
             var rowPosY = ImGui.GetCursorPosY();
             {
-                DrawCompletionCheckmark(rowPosY, rowHeight, uiState->IsCompanionUnlocked(minionInfo.Minion));
+                var minionUnlocked = uiState->IsCompanionUnlocked(minionInfo.Minion);
+                DrawCompletionCheckmark(rowPosY, rowHeight, minionUnlocked);
 
                 ImGui.SameLine();
                 ImGui.SetCursorPosY(rowPosY);
@@ -109,6 +109,13 @@ public unsafe class MainWindow : Window
                 ImGui.SameLine();
                 ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
                 ImGui.TextUnformatted(GetCompanionName(companion.RowId));
+                if (minionUnlocked)
+                {
+                    if (ImGui.IsItemHovered())
+                        ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+                    if (ImGui.IsItemClicked())
+                        ActionManager.Instance()->UseAction(ActionType.Companion, minionInfo.Minion);
+                }
             }
 
             // Weapon
