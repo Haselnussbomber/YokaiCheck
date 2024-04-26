@@ -56,7 +56,7 @@ public class DtrService : IDisposable
 
     private bool IsMedal(uint itemId)
     {
-        foreach (var weaponInfo in Data.WEAPON_INFO_TABLE)
+        foreach (var (_, weaponInfo) in Data.DataTable)
         {
             if (weaponInfo.Medal == itemId)
                 return true;

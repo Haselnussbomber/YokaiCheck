@@ -74,23 +74,19 @@ public unsafe class MainWindow : Window
             ImGui.TableSetupColumn(t("MainWindow.YKWTable.ColumnHeader.LegendaryMedals"), ImGuiTableColumnFlags.WidthFixed, 120);
         ImGui.TableHeadersRow();
 
-        var i = 0;
-        foreach (var row in GetSheet<YKW>())
+        foreach (var (minionInfo, weaponInfo) in Data.DataTable)
         {
-            if (row.RowId == 0 || row.Item.Row == 0 || row.Unknown1 == 0)
-                continue;
-
             ImGui.TableNextRow();
 
-            var medal = GetRow<ExtendedItem>(row.Item.Row)!;
-            var companion = GetRow<Companion>(row.Unknown1)!;
+            var medal = GetRow<ExtendedItem>(weaponInfo.Medal)!;
+            var companion = GetRow<Companion>(minionInfo.Minion)!;
             var weaponComplete = false;
 
             // Minion
             ImGui.TableNextColumn();
             var rowPosY = ImGui.GetCursorPosY();
             {
-                DrawCompletionCheckmark(rowPosY, rowHeight, uiState->IsCompanionUnlocked(row.Unknown1));
+                DrawCompletionCheckmark(rowPosY, rowHeight, uiState->IsCompanionUnlocked(minionInfo.Minion));
 
                 ImGui.SameLine();
                 ImGui.SetCursorPosY(rowPosY);
@@ -104,7 +100,6 @@ public unsafe class MainWindow : Window
             // Weapon
             ImGui.TableNextColumn();
             {
-                var weaponInfo = Data.WEAPON_INFO_TABLE[i];
                 var weapon = GetRow<ExtendedItem>(weaponInfo.Weapon)!;
                 var subweapon = GetRow<ExtendedItem>(weaponInfo.Subweapon);
                 var hasSubweapon = weaponInfo.Subweapon != 0 && subweapon != null;
@@ -159,8 +154,6 @@ public unsafe class MainWindow : Window
                     ImGui.TextUnformatted(t("MainWindow.IncompleteWeaponMedallionCounter", count));
                 }
             }
-
-            i++;
         }
     }
 
