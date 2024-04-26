@@ -1,5 +1,6 @@
 using Dalamud.Game.Command;
 using Dalamud.Plugin;
+using YokaiCheck.Services;
 using YokaiCheck.Windows;
 
 namespace YokaiCheck;
@@ -11,6 +12,7 @@ public sealed class Plugin : IDalamudPlugin
     public Plugin(DalamudPluginInterface pluginInterface)
     {
         Service.Initialize(pluginInterface);
+        Service.AddService<DtrService>();
 
         Service.PluginInterface.LanguageChanged += PluginInterface_LanguageChanged;
         Service.PluginInterface.UiBuilder.OpenMainUi += OpenMainUi;
