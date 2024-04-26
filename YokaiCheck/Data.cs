@@ -1,3 +1,5 @@
+using HaselCommon.Extensions;
+
 namespace YokaiCheck;
 
 public readonly record struct MinionInfo(uint Minion, uint Achievement, uint Count, uint Item);
@@ -34,4 +36,10 @@ public static class Data
     public static uint PORTRAIT_ITEM_CATALOG_ID = 41797;
     public static int PORTRAIT_MGP_CATALOG_ID = 29;
     public static int PORTRAIT_NEED_MGP = 20000;
+
+    public static MinionInfo? GetMinionInfoByMinionId(uint minionId)
+        => DataTable.FindFirst(tuple => tuple.Item1.Minion == minionId, out var tuple) ? tuple.Item1 : null;
+
+    public static WeaponInfo? GetWeaponInfoByMinionId(uint minionId)
+        => DataTable.FindFirst(tuple => tuple.Item1.Minion == minionId, out var tuple) ? tuple.Item2 : null;
 }

@@ -1,8 +1,11 @@
-using System.Collections.Generic;
+using System.Text;
 using Dalamud.Game.Gui.Dtr;
-using Dalamud.Game.Inventory;
-using Dalamud.Game.Inventory.InventoryEventArgTypes;
+using Dalamud.Plugin.Services;
+using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using HaselCommon.Extensions;
+using Lumina.Excel.GeneratedSheets;
 using YokaiCheck.Windows;
 
 namespace YokaiCheck.Services;
@@ -10,11 +13,13 @@ namespace YokaiCheck.Services;
 public class DtrService : IDisposable
 {
     private readonly DtrBarEntry DtrEntry;
+    private uint LastMinionId;
+    private bool LastWeaponUnlockStatus;
 
     public DtrService()
     {
-        Service.GameInventory.InventoryChanged += GameInventory_InventoryChanged;
-        Service.ClientState.TerritoryChanged += ClientState_TerritoryChanged;
+        Service.Framework.Update += Framework_Update;
+
         DtrEntry = Service.DtrBar.Get("Yo-kai Check");
         DtrEntry.OnClick = Service.WindowManager.ToggleWindow<MainWindow>;
         DtrEntry.SetVisibility(false);
@@ -22,47 +27,90 @@ public class DtrService : IDisposable
 
     public void Dispose()
     {
-        Service.ClientState.TerritoryChanged -= ClientState_TerritoryChanged;
-        Service.GameInventory.InventoryChanged -= GameInventory_InventoryChanged;
+        Service.Framework.Update -= Framework_Update;
         DtrEntry.Dispose();
     }
 
-    private void GameInventory_InventoryChanged(IReadOnlyCollection<InventoryEventArgs> events)
+    private unsafe void Framework_Update(IFramework framework)
     {
-        foreach (var evt in events)
+        var player = Control.GetLocalPlayer();
+        if (player == null)
+            return;
+
+        var companion = player->Character.Companion.CompanionObject;
+        if (companion == null)
+            return;
+
+        var minionId = companion->Character.GameObject.DataID;
+        var isWeaponUnlocked = IsWeaponUnlocked(minionId);
+
+        if (!(DidMinionChange(minionId) || DidWeaponUnlockStatusChange(isWeaponUnlocked)))
+            return;
+
+        if (minionId == 0 || isWeaponUnlocked)
         {
-            if (!IsMedal(evt.Item.ItemId))
-                continue;
-
-            if (evt.Type is GameInventoryEvent.Added or GameInventoryEvent.Changed)
-            {
-                DtrEntry.Text = $"{evt.Item.Quantity} / 10";
-                DtrEntry.Tooltip = t("Plugin.DisplayName") + ": " + GetItemName(evt.Item.ItemId);
-                DtrEntry.SetVisibility(true);
-                break;
-            }
-
-            if (evt.Type is GameInventoryEvent.Removed)
-            {
-                DtrEntry.SetVisibility(false);
-                break;
-            }
-        }
-    }
-
-    private void ClientState_TerritoryChanged(ushort obj)
-    {
-        DtrEntry.SetVisibility(false);
-    }
-
-    private static bool IsMedal(uint itemId)
-    {
-        foreach (var (_, weaponInfo) in Data.DataTable)
-        {
-            if (weaponInfo.Medal == itemId)
-                return true;
+            DtrEntry.SetVisibility(false);
+            return;
         }
 
-        return false;
+        var weaponInfo = Data.GetWeaponInfoByMinionId(minionId);
+        if (weaponInfo == null)
+        {
+            DtrEntry.SetVisibility(false);
+            return;
+        }
+
+        var tooltipBuilder = new StringBuilder();
+        tooltipBuilder.AppendLine(t("Plugin.DisplayName"));
+        tooltipBuilder.AppendLine(GetItemName(weaponInfo.Value.Medal));
+
+        var row = FindRow<YKW>(row => row?.Item.Row == weaponInfo.Value.Medal);
+        if (row != null)
+        {
+            foreach (var location in row.Location)
+            {
+                if (location.Row != 0 && location.Value != null)
+                    tooltipBuilder.AppendLine("- " + GetSheetText<PlaceName>(location.Value!.PlaceName.Row, "Name"));
+            }
+        }
+
+        var count = InventoryManager.Instance()->GetInventoryItemCount(weaponInfo.Value.Medal);
+        DtrEntry.SetText($"{count} / 10");
+        DtrEntry.Tooltip = tooltipBuilder.ToString().TrimEnd();
+        DtrEntry.SetVisibility(true);
+    }
+
+    private bool DidMinionChange(uint minionId)
+    {
+        if (minionId == LastMinionId)
+            return false;
+
+        LastMinionId = minionId;
+        return true;
+    }
+
+    private unsafe bool DidWeaponUnlockStatusChange(bool isWeaponUnlocked)
+    {
+        if (LastWeaponUnlockStatus == isWeaponUnlocked)
+            return false;
+
+        LastWeaponUnlockStatus = isWeaponUnlocked;
+        return true;
+    }
+
+    private unsafe bool IsWeaponUnlocked(uint minionId)
+    {
+        if (minionId == 0)
+            return false;
+
+        var weaponInfo = Data.GetWeaponInfoByMinionId(minionId);
+        if (weaponInfo == null)
+            return false;
+
+        ref var achievement = ref UIState.Instance()->Achievement;
+        if (!achievement.IsLoaded())
+            return false;
+
+        return achievement.IsComplete(weaponInfo.Value.Achievement);
     }
 }
