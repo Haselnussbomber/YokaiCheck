@@ -11,4 +11,4 @@ https://raw.githubusercontent.com/Haselnussbomber/MyDalamudPlugins/main/repo.jso
 
 Open with `/yokai`.
 
-![Screenshot](https://github.com/Haselnussbomber/YokaiCheck/assets/96642047/322e7b1a-0abd-4a58-a203-f22437f1acfc)
+![Screenshot](https://github.com/Haselnussbomber/YokaiCheck/assets/96642047/5394572a-5028-40fb-af22-8b94247df813)
