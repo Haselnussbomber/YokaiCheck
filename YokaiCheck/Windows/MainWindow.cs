@@ -1,6 +1,7 @@
 using System.Numerics;
 using Dalamud.Game.Text;
 using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using FFXIVClientStructs.FFXIV.Client.Game;
@@ -53,6 +54,19 @@ public unsafe class MainWindow : Window
 
         if (ImGui.Button(t("MainWindow.OpenYokaiMedalliumButton.Label")))
             GetAgent<AgentInterface>(AgentId.YkwNote)->Show();
+
+        ImGui.SameLine();
+
+        ImGui.SetCursorPosX(ImGui.GetContentRegionMax().X - ImGuiUtils.GetIconSize(FontAwesomeIcon.InfoCircle).X);
+        ImGuiUtils.Icon(FontAwesomeIcon.InfoCircle, Colors.Grey3);
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.BeginTooltip();
+            ImGui.PushTextWrapPos(300);
+            ImGui.TextUnformatted(t("MainWindow.InfoCircle.Tooltip"));
+            ImGui.PopTextWrapPos();
+            ImGui.EndTooltip();
+        }
 
         var hasAllWeapons = achievementsLoded && uiState->Achievement.IsComplete(Data.WEAPON_ACHIEVEMENT_ALL_17);
 
