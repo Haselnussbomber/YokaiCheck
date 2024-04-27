@@ -171,8 +171,30 @@ public unsafe class MainWindow : Window
                 {
                     ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
                     var count = inventoryManager->GetInventoryItemCount(medal.RowId);
-                    using var color = ImRaii.PushColor(ImGuiCol.Text, (uint)Colors.Green, count == 10);
-                    ImGui.TextUnformatted(t("MainWindow.IncompleteWeaponMedallionCounter", count));
+
+                    using (ImRaii.PushColor(ImGuiCol.Text, (uint)Colors.Green, count == 10))
+                        ImGui.TextUnformatted(t("MainWindow.IncompleteWeaponMedallionCounter", count));
+
+                    if (ImGui.IsItemHovered())
+                    {
+                        var row = FindRow<YKW>(row => row?.Item.Row == weaponInfo.Medal);
+                        if (row != null)
+                        {
+                            ImGui.BeginTooltip();
+                            var currentTerritoryId = Service.ClientState.TerritoryType;
+
+                            foreach (var location in row.Location)
+                            {
+                                if (location.Row != 0 && location.Value != null)
+                                {
+                                    using (ImRaii.PushColor(ImGuiCol.Text, (uint)Colors.Green, location.Row == currentTerritoryId))
+                                        ImGui.TextUnformatted("- " + GetSheetText<PlaceName>(location.Value!.PlaceName.Row, "Name"));
+                                }
+                            }
+
+                            ImGui.EndTooltip();
+                        }
+                    }
                 }
             }
         }
