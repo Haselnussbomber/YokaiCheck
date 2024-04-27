@@ -15,6 +15,7 @@ public class DtrService : IDisposable
     private readonly DtrBarEntry DtrEntry;
     private uint LastMinionId;
     private bool LastWeaponUnlockStatus;
+    private int LastMedalCount;
 
     public DtrService()
     {
@@ -44,9 +45,6 @@ public class DtrService : IDisposable
         var minionId = companion->Character.GameObject.DataID;
         var isWeaponUnlocked = IsWeaponUnlocked(minionId);
 
-        if (!(DidMinionChange(minionId) || DidWeaponUnlockStatusChange(isWeaponUnlocked)))
-            return;
-
         if (minionId == 0 || isWeaponUnlocked)
         {
             DtrEntry.SetVisibility(false);
@@ -59,6 +57,11 @@ public class DtrService : IDisposable
             DtrEntry.SetVisibility(false);
             return;
         }
+
+        var count = InventoryManager.Instance()->GetInventoryItemCount(weaponInfo.Value.Medal);
+
+        if (!(DidMinionChange(minionId) || DidWeaponUnlockStatusChange(isWeaponUnlocked) || DidMedalCountChange(count)))
+            return;
 
         var tooltipBuilder = new StringBuilder();
         tooltipBuilder.AppendLine(t("Plugin.DisplayName"));
@@ -74,7 +77,6 @@ public class DtrService : IDisposable
             }
         }
 
-        var count = InventoryManager.Instance()->GetInventoryItemCount(weaponInfo.Value.Medal);
         DtrEntry.SetText($"{count} / 10");
         DtrEntry.Tooltip = tooltipBuilder.ToString().TrimEnd();
         DtrEntry.SetVisibility(true);
@@ -86,6 +88,15 @@ public class DtrService : IDisposable
             return false;
 
         LastMinionId = minionId;
+        return true;
+    }
+
+    private bool DidMedalCountChange(int count)
+    {
+        if (count == LastMedalCount)
+            return false;
+
+        LastMedalCount = count;
         return true;
     }
 
