@@ -87,6 +87,8 @@ public unsafe class MainWindow : Window
             ImGui.TableSetupColumn(t("MainWindow.YKWTable.ColumnHeader.LegendaryMedals"), ImGuiTableColumnFlags.WidthFixed, 120);
         ImGui.TableHeadersRow();
 
+        var currentMinionId = Plugin.GetCurrentMinionId();
+
         foreach (var (minionInfo, weaponInfo) in Data.DataTable)
         {
             ImGui.TableNextRow();
@@ -94,6 +96,7 @@ public unsafe class MainWindow : Window
             var medal = GetRow<ExtendedItem>(weaponInfo.Medal)!;
             var companion = GetRow<Companion>(minionInfo.Minion)!;
             var weaponComplete = false;
+            var isMinionActive = currentMinionId == companion.RowId;
 
             // Minion
             ImGui.TableNextColumn();
@@ -108,7 +111,9 @@ public unsafe class MainWindow : Window
 
                 ImGui.SameLine();
                 ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
-                ImGui.TextUnformatted(GetCompanionName(companion.RowId));
+                using (ImRaii.PushColor(ImGuiCol.Text, (uint)Colors.Green, isMinionActive))
+                    ImGui.TextUnformatted(GetCompanionName(companion.RowId));
+
                 if (minionUnlocked)
                 {
                     if (ImGui.IsItemHovered())
@@ -116,6 +121,9 @@ public unsafe class MainWindow : Window
                     if (ImGui.IsItemClicked())
                         ActionManager.Instance()->UseAction(ActionType.Companion, minionInfo.Minion);
                 }
+
+                if (isMinionActive && ImGui.IsItemHovered())
+                    ImGui.SetTooltip(GetAddonText(12196));
             }
 
             // Weapon
