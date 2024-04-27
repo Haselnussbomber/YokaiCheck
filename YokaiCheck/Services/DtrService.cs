@@ -2,7 +2,6 @@ using System.Text;
 using Dalamud.Game.Gui.Dtr;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using HaselCommon.Extensions;
 using Lumina.Excel.GeneratedSheets;
@@ -34,27 +33,27 @@ public class DtrService : IDisposable
 
     private unsafe void Framework_Update(IFramework framework)
     {
-        var player = Control.GetLocalPlayer();
-        if (player == null)
-            return;
-
-        var companion = player->Character.Companion.CompanionObject;
-        if (companion == null)
-            return;
-
-        var minionId = companion->Character.GameObject.DataID;
+        var minionId = Plugin.GetCurrentMinionId();
         var isWeaponUnlocked = IsWeaponUnlocked(minionId);
+
+        void Reset()
+        {
+            DtrEntry.SetVisibility(false);
+            LastMinionId = 0;
+            LastMedalCount = 0;
+            LastWeaponUnlockStatus = false;
+        }
 
         if (minionId == 0 || isWeaponUnlocked)
         {
-            DtrEntry.SetVisibility(false);
+            Reset();
             return;
         }
 
         var weaponInfo = Data.GetWeaponInfoByMinionId(minionId);
         if (weaponInfo == null)
         {
-            DtrEntry.SetVisibility(false);
+            Reset();
             return;
         }
 

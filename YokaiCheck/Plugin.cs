@@ -1,5 +1,6 @@
 using Dalamud.Game.Command;
 using Dalamud.Plugin;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using YokaiCheck.Services;
 using YokaiCheck.Windows;
 
@@ -45,5 +46,18 @@ public sealed class Plugin : IDalamudPlugin
         Service.PluginInterface.UiBuilder.OpenMainUi -= OpenMainUi;
 
         Service.Dispose();
+    }
+
+    public static unsafe uint GetCurrentMinionId()
+    {
+        var player = Control.GetLocalPlayer();
+        if (player == null)
+            return 0;
+
+        var companion = player->Character.Companion.CompanionObject;
+        if (companion == null)
+            return 0;
+
+        return companion->Character.GameObject.DataID;
     }
 }
