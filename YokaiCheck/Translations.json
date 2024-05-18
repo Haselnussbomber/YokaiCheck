@@ -33,8 +33,8 @@
     "de": "Yo-kai-Medaillium öffnen"
   },
   "MainWindow.InfoCircle.Tooltip": {
-    "en": "Please note:\n- The first companion only costs one Yo-kai medal, while further companions cost 3 medals. Likewise, the first weapon only costs five Legendary Medals, while further weapons cost 10. The plugin cannot take this into account.\n- To update the completion status, please open the achievements window again.",
-    "de": "Bitte beachte:\n- Der erste Begleiter kostet nur eine Yo-kai Medaille während weitere Begleiter 3 Medallien kosten. Ebenso, kostet die erste Waffe nur fünf Legendäre Medaillen, während weitere Waffen 10 kosten. Das Plugin kann dies nicht berücksichtigen.\n- Um den Abschlussstatus zu aktualisieren öffne bitte das Errungenschaften-Fenster erneut."
+    "en": "Please note:\nThe first companion only costs one Yo-kai medal, while further companions cost 3 medals. Likewise, the first weapon only costs five Legendary Medals, while further weapons cost 10. The plugin cannot take this into account.",
+    "de": "Bitte beachte:\nDer erste Begleiter kostet nur eine Yo-kai Medaille während weitere Begleiter 3 Medallien kosten. Ebenso, kostet die erste Waffe nur fünf Legendäre Medaillen, während weitere Waffen 10 kosten. Das Plugin kann dies nicht berücksichtigen."
   },
   "MainWindow.YKWTable.ColumnHeader.Minion": {
     "en": "Minion",
