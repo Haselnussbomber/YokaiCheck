@@ -1,4 +1,4 @@
-using HaselCommon.Extensions;
+using Lumina.Extensions;
 
 namespace YokaiCheck;
 
@@ -38,8 +38,8 @@ public static class Data
     public static int PORTRAIT_NEED_MGP = 20000;
 
     public static MinionInfo? GetMinionInfoByMinionId(uint minionId)
-        => DataTable.FindFirst(tuple => tuple.Item1.Minion == minionId, out var tuple) ? tuple.Item1 : null;
+        => DataTable.TryGetFirst(tuple => tuple.Item1.Minion == minionId, out var tuple) ? tuple.Item1 : null;
 
     public static WeaponInfo? GetWeaponInfoByMinionId(uint minionId)
-        => DataTable.FindFirst(tuple => tuple.Item1.Minion == minionId, out var tuple) ? tuple.Item2 : null;
+        => DataTable.TryGetFirst(tuple => tuple.Item1.Minion == minionId, out var tuple) ? tuple.Item2 : null;
 }

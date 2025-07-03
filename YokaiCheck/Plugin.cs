@@ -1,51 +1,32 @@
-using Dalamud.Game.Command;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
+using Microsoft.Extensions.DependencyInjection;
 using YokaiCheck.Services;
-using YokaiCheck.Windows;
 
 namespace YokaiCheck;
 
 public sealed class Plugin : IDalamudPlugin
 {
-    private readonly CommandInfo CommandInfo;
+    private readonly ServiceProvider _serviceProvider;
 
-    public Plugin(DalamudPluginInterface pluginInterface)
+    public Plugin(IDalamudPluginInterface pluginInterface, IFramework framework)
     {
-        Service.Initialize(pluginInterface);
-        Service.AddService<DtrService>();
+        _serviceProvider = new ServiceCollection()
+            .AddDalamud(pluginInterface)
+            .AddHaselCommon()
+            .AddYokaiCheck()
+            .BuildServiceProvider();
 
-        Service.PluginInterface.LanguageChanged += PluginInterface_LanguageChanged;
-        Service.PluginInterface.UiBuilder.OpenMainUi += OpenMainUi;
-
-        CommandInfo = new CommandInfo(OnCommand) { HelpMessage = t("CommandHandlerHelpMessage") };
-
-        Service.CommandManager.AddHandler("/yokai", CommandInfo);
-    }
-
-    private void PluginInterface_LanguageChanged(string langCode)
-    {
-        CommandInfo.HelpMessage = t("CommandHandlerHelpMessage");
-    }
-
-    private void OpenMainUi()
-    {
-        Service.WindowManager.ToggleWindow<MainWindow>();
-    }
-
-    private void OnCommand(string command, string arguments)
-    {
-        Service.WindowManager.ToggleWindow<MainWindow>();
+        framework.RunOnFrameworkThread(() =>
+        {
+            _serviceProvider.GetRequiredService<CommandManager>();
+        });
     }
 
     void IDisposable.Dispose()
     {
-        Service.CommandManager.RemoveHandler("/yokai");
-
-        Service.PluginInterface.LanguageChanged -= PluginInterface_LanguageChanged;
-        Service.PluginInterface.UiBuilder.OpenMainUi -= OpenMainUi;
-
-        Service.Dispose();
+        _serviceProvider.Dispose();
     }
 
     public static unsafe uint GetCurrentMinionId()
@@ -54,10 +35,10 @@ public sealed class Plugin : IDalamudPlugin
         if (player == null)
             return 0;
 
-        var companion = player->Character.Companion.CompanionObject;
+        var companion = player->Character.CompanionData.CompanionObject;
         if (companion == null)
             return 0;
 
-        return companion->Character.GameObject.DataID;
+        return companion->Character.GameObject.BaseId;
     }
 }

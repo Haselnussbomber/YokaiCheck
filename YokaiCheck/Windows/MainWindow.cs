@@ -2,24 +2,32 @@ using System.Numerics;
 using Dalamud.Game.Text;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
-using Dalamud.Interface.Windowing;
+using Dalamud.Plugin.Services;
+using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using FFXIVClientStructs.FFXIV.Component.GUI;
-using HaselCommon.Sheets;
-using HaselCommon.Utils;
+using HaselCommon.Graphics;
+using HaselCommon.Gui;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets2;
+using Lumina.Excel.Sheets;
 
 namespace YokaiCheck.Windows;
 
-public unsafe class MainWindow : Window
+[RegisterSingleton, AutoConstruct]
+public unsafe partial class MainWindow : SimpleWindow
 {
-    public MainWindow() : base(t("Plugin.DisplayName"))
-    {
-        Namespace = "YokaiCheckMain";
+    private readonly TextService _textService;
+    private readonly ExcelService _excelService;
+    private readonly ItemService _itemService;
+    private readonly WindowManager _windowManager;
+    private readonly IClientState _clientState;
+    private readonly TextureService _textureService;
+    private readonly ImGuiContextMenuService _imGuiContextMenuService;
 
+    [AutoPostConstruct]
+    private void Initialize()
+    {
         Size = new Vector2(610, 810);
         SizeCondition = ImGuiCond.FirstUseEver;
         SizeConstraints = new WindowSizeConstraints()
@@ -27,11 +35,6 @@ public unsafe class MainWindow : Window
             MinimumSize = new Vector2(570, 200),
             MaximumSize = new Vector2(4069),
         };
-    }
-
-    public override void OnClose()
-    {
-        Service.WindowManager.CloseWindow<MainWindow>();
     }
 
     public override unsafe void Draw()
@@ -44,25 +47,25 @@ public unsafe class MainWindow : Window
         var achievementsLoded = uiState->Achievement.IsLoaded();
 
         if (!achievementsLoded)
-            ImGui.TextUnformatted(t("MainWindow.AchievementsNotLoaded"));
+            ImGui.TextUnformatted(_textService.Translate("MainWindow.AchievementsNotLoaded"));
 
-        if (ImGui.Button(t("MainWindow.OpenAchievementsButton.Label")))
-            GetAgent<AgentInterface>(AgentId.Achievement)->Show();
+        if (ImGui.Button(_textService.Translate("MainWindow.OpenAchievementsButton.Label")))
+            AgentAchievement.Instance()->Show();
 
         ImGui.SameLine();
 
-        if (ImGui.Button(t("MainWindow.OpenYokaiMedalliumButton.Label")))
-            GetAgent<AgentInterface>(AgentId.YkwNote)->Show();
+        if (ImGui.Button(_textService.Translate("MainWindow.OpenYokaiMedalliumButton.Label")))
+            AgentModule.Instance()->GetAgentByInternalId(AgentId.YkwNote)->Show();
 
         ImGui.SameLine();
 
         ImGui.SetCursorPosX(ImGui.GetContentRegionMax().X - ImGuiUtils.GetIconSize(FontAwesomeIcon.InfoCircle).X);
-        ImGuiUtils.Icon(FontAwesomeIcon.InfoCircle, Colors.Grey3);
+        ImGuiUtils.Icon(FontAwesomeIcon.InfoCircle, Color.Grey3.ToUInt());
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
             ImGui.PushTextWrapPos(300);
-            ImGui.TextUnformatted(t("MainWindow.InfoCircle.Tooltip"));
+            ImGui.TextUnformatted(_textService.Translate("MainWindow.InfoCircle.Tooltip"));
             ImGui.PopTextWrapPos();
             ImGui.EndTooltip();
         }
@@ -81,10 +84,10 @@ public unsafe class MainWindow : Window
         using var table = ImRaii.Table("YKWTable", hasAllWeapons ? 2 : 3);
         if (!table) return;
 
-        ImGui.TableSetupColumn(t("MainWindow.YKWTable.ColumnHeader.Minion"), ImGuiTableColumnFlags.WidthFixed, 180);
-        ImGui.TableSetupColumn(t("MainWindow.YKWTable.ColumnHeader.Weapon"), ImGuiTableColumnFlags.WidthFixed, 280);
+        ImGui.TableSetupColumn(_textService.Translate("MainWindow.YKWTable.ColumnHeader.Minion"), ImGuiTableColumnFlags.WidthFixed, 180);
+        ImGui.TableSetupColumn(_textService.Translate("MainWindow.YKWTable.ColumnHeader.Weapon"), ImGuiTableColumnFlags.WidthFixed, 280);
         if (!hasAllWeapons)
-            ImGui.TableSetupColumn(t("MainWindow.YKWTable.ColumnHeader.LegendaryMedals"), ImGuiTableColumnFlags.WidthFixed, 120);
+            ImGui.TableSetupColumn(_textService.Translate("MainWindow.YKWTable.ColumnHeader.LegendaryMedals"), ImGuiTableColumnFlags.WidthFixed, 120);
         ImGui.TableHeadersRow();
 
         var currentMinionId = Plugin.GetCurrentMinionId();
@@ -93,8 +96,12 @@ public unsafe class MainWindow : Window
         {
             ImGui.TableNextRow();
 
-            var medal = GetRow<ExtendedItem>(weaponInfo.Medal)!;
-            var companion = GetRow<Companion>(minionInfo.Minion)!;
+            if (!_excelService.TryGetRow<Item>(weaponInfo.Medal, out var medal))
+                continue;
+
+            if (!_excelService.TryGetRow<Companion>(minionInfo.Minion, out var companion))
+                continue;
+
             var weaponComplete = false;
             var isMinionActive = currentMinionId == companion.RowId;
 
@@ -111,8 +118,8 @@ public unsafe class MainWindow : Window
 
                 ImGui.SameLine();
                 ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
-                using (ImRaii.PushColor(ImGuiCol.Text, (uint)Colors.Green, isMinionActive))
-                    ImGui.TextUnformatted(GetCompanionName(companion.RowId));
+                using (ImRaii.PushColor(ImGuiCol.Text, Color.Green, isMinionActive))
+                    ImGui.TextUnformatted(_textService.GetCompanionName(companion.RowId));
 
                 if (minionUnlocked)
                 {
@@ -123,15 +130,14 @@ public unsafe class MainWindow : Window
                 }
 
                 if (isMinionActive && ImGui.IsItemHovered())
-                    ImGui.SetTooltip(GetAddonText(12196));
+                    ImGui.SetTooltip(_textService.GetAddonText(12196));
             }
 
             // Weapon
             ImGui.TableNextColumn();
             {
-                var weapon = GetRow<ExtendedItem>(weaponInfo.Weapon)!;
-                var subweapon = GetRow<ExtendedItem>(weaponInfo.Subweapon);
-                var hasSubweapon = weaponInfo.Subweapon != 0 && subweapon != null;
+                _excelService.TryGetRow<Item>(weaponInfo.Weapon, out var weapon);
+                var hasSubweapon = _excelService.TryGetRow<Item>(weaponInfo.Subweapon, out var subweapon) && weaponInfo.Subweapon != 0;
 
                 if (achievementsLoded)
                 {
@@ -152,7 +158,7 @@ public unsafe class MainWindow : Window
 
                 ImGui.SameLine();
 
-                var weaponName = GetItemName(weapon.RowId);
+                var weaponName = _textService.GetItemName(weapon.RowId).ExtractText().StripSoftHyphen();
                 var weaponNameSize = ImGui.CalcTextSize(weaponName);
 
                 var textOffset = hasSubweapon
@@ -167,7 +173,7 @@ public unsafe class MainWindow : Window
                 {
                     ImGui.SetCursorPos(new(textPosX, rowPosY + rowHeight / 2f - textOffset));
                     ImGuiUtils.PushCursorY(rowHeight / 2f);
-                    ImGui.TextUnformatted(GetItemName(subweapon!.RowId));
+                    ImGui.TextUnformatted(_textService.GetItemName(subweapon!.RowId).ExtractText().StripSoftHyphen());
                 }
             }
 
@@ -180,28 +186,24 @@ public unsafe class MainWindow : Window
                     ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
                     var count = inventoryManager->GetInventoryItemCount(medal.RowId);
 
-                    using (ImRaii.PushColor(ImGuiCol.Text, (uint)Colors.Green, count == 10))
-                        ImGui.TextUnformatted(t("MainWindow.IncompleteWeaponMedallionCounter", count));
+                    using (ImRaii.PushColor(ImGuiCol.Text, Color.Green, count == 10))
+                        ImGui.TextUnformatted(_textService.Translate("MainWindow.IncompleteWeaponMedallionCounter", count));
 
-                    if (ImGui.IsItemHovered())
+                    if (ImGui.IsItemHovered() && _excelService.TryFindRow<YKW>(row => row.Item.RowId == weaponInfo.Medal, out var row))
                     {
-                        var row = FindRow<YKW>(row => row?.Item.Row == weaponInfo.Medal);
-                        if (row != null)
+                        ImGui.BeginTooltip();
+                        var currentTerritoryId = _clientState.TerritoryType;
+
+                        foreach (var location in row.Location)
                         {
-                            ImGui.BeginTooltip();
-                            var currentTerritoryId = Service.ClientState.TerritoryType;
-
-                            foreach (var location in row.Location)
+                            if (location.RowId != 0 && location.IsValid)
                             {
-                                if (location.Row != 0 && location.Value != null)
-                                {
-                                    using (ImRaii.PushColor(ImGuiCol.Text, (uint)Colors.Green, location.Row == currentTerritoryId))
-                                        ImGui.TextUnformatted("- " + GetSheetText<PlaceName>(location.Value!.PlaceName.Row, "Name"));
-                                }
+                                using (ImRaii.PushColor(ImGuiCol.Text, Color.Green, location.RowId == currentTerritoryId))
+                                    ImGui.TextUnformatted("- " + _textService.GetPlaceName(location.Value!.PlaceName.RowId));
                             }
-
-                            ImGui.EndTooltip();
                         }
+
+                        ImGui.EndTooltip();
                     }
                 }
             }
@@ -210,13 +212,12 @@ public unsafe class MainWindow : Window
 
     private void DrawPortraitTable(InventoryManager* inventoryManager, float textHeight, float rowHeight)
     {
-        var portraitItem = GetRow<ExtendedItem>(Data.PORTRAIT_ITEM_CATALOG_ID);
-        if (portraitItem == null)
+        if (!_excelService.TryGetRow<Item>(Data.PORTRAIT_ITEM_CATALOG_ID, out var portraitItem))
             return;
 
         ImGuiUtils.DrawPaddedSeparator();
 
-        var portraitUnlocked = portraitItem.IsUnlocked;
+        var portraitUnlocked = _itemService.IsUnlocked(portraitItem.RowId);
 
         using var table = ImRaii.Table("YKWPortraitTable", !portraitUnlocked ? 2 : 1);
         if (!table) return;
@@ -230,7 +231,7 @@ public unsafe class MainWindow : Window
         DrawItem(portraitItem, rowHeight);
         ImGui.SameLine();
         ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
-        ImGui.TextUnformatted(GetItemName(portraitItem.RowId));
+        ImGui.TextUnformatted(_textService.GetItemName(portraitItem.RowId).ExtractText().StripSoftHyphen());
 
         if (!portraitUnlocked)
         {
@@ -238,32 +239,33 @@ public unsafe class MainWindow : Window
             ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
             var gilHas = inventoryManager->GetGil();
             var gilNeed = Data.PORTRAIT_NEED_MGP;
-            var color = gilHas >= gilNeed ? Colors.Green : Colors.Red;
+            var color = gilHas >= gilNeed ? Color.Green : Color.Red;
             ImGuiUtils.TextUnformattedColored(color, $"{gilHas:n0} / {gilNeed:n0} {SeIconChar.Gil.ToIconString()}");
         }
     }
 
-    private void DrawItem(ExtendedItem item, float iconSize = 24, string key = "")
+    private void DrawItem(Item item, float iconSize = 24, string key = "")
     {
-        Service.TextureManager.GetIcon(item.Icon).Draw(iconSize);
+        _textureService.DrawIcon(item.Icon, iconSize);
 
-        ImGuiContextMenu.Draw($"##{key}_ItemContextMenu{item.RowId}", [
-            ImGuiContextMenu.CreateTryOn(item),
-            ImGuiContextMenu.CreateItemFinder(item.RowId),
-            ImGuiContextMenu.CreateCopyItemName(item.RowId),
-            ImGuiContextMenu.CreateItemSearch(item),
-            ImGuiContextMenu.CreateOpenOnGarlandTools("item", item.RowId),
-        ]);
+        _imGuiContextMenuService.Draw($"##{key}_ItemContextMenu{item.RowId}", builder => builder
+            .AddTryOn(item.RowId)
+            .AddItemFinder(item.RowId)
+            .AddCopyItemName(item.RowId)
+            .AddItemSearch(item.RowId)
+            .AddOpenOnGarlandTools("item", item.RowId));
     }
 
     private void DrawCompletionCheckmark(float yPos, float rowHeight, bool isComplete)
     {
         var icon = isComplete ? FontAwesomeIcon.Check : FontAwesomeIcon.Times;
-        var color = isComplete ? Colors.Green : Colors.Red;
-        var tooltipText = isComplete ? t("MainWindow.CompletionCheckmark.Tooltip.Collected") : t("MainWindow.CompletionCheckmark.Tooltip.NotCollected");
+        var color = isComplete ? Color.Green : Color.Red;
+        var tooltipText = isComplete
+            ? _textService.Translate("MainWindow.CompletionCheckmark.Tooltip.Collected")
+            : _textService.Translate("MainWindow.CompletionCheckmark.Tooltip.NotCollected");
         var iconHeight = ImGuiUtils.GetIconSize(icon).Y;
         ImGui.SetCursorPosY(yPos + rowHeight / 2f - iconHeight / 2f);
-        ImGuiUtils.Icon(icon, color);
+        ImGuiUtils.Icon(icon, color.ToUInt());
         if (ImGui.IsItemHovered())
             ImGui.SetTooltip(tooltipText);
     }

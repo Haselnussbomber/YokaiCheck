@@ -1,47 +1,59 @@
 using System.Text;
 using Dalamud.Game.Gui.Dtr;
 using Dalamud.Plugin.Services;
+using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using HaselCommon.Extensions;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
+using Microsoft.Extensions.ObjectPool;
 using YokaiCheck.Windows;
 
 namespace YokaiCheck.Services;
 
-public class DtrService : IDisposable
+[RegisterSingleton, AutoConstruct]
+public partial class DtrService : IDisposable
 {
-    private readonly DtrBarEntry DtrEntry;
-    private uint LastMinionId;
-    private bool LastWeaponUnlockStatus;
-    private int LastMedalCount;
+    private readonly TextService _textService;
+    private readonly ExcelService _excelService;
+    private readonly WindowManager _windowManager;
+    private readonly IFramework _framework;
+    private readonly IDtrBar _dtrBar;
 
-    public DtrService()
+    private ObjectPool<StringBuilder> _stringBuilderPool;
+    private IDtrBarEntry _dtrEntry;
+    private uint _lastMinionId;
+    private bool _lastWeaponUnlockStatus;
+    private int _lastMedalCount;
+
+    private void Initialize()
     {
-        Service.Framework.Update += Framework_Update;
+        _stringBuilderPool = new DefaultObjectPool<StringBuilder>(new StringBuilderPooledObjectPolicy()); ;
 
-        DtrEntry = Service.DtrBar.Get("Yo-kai Check");
-        DtrEntry.OnClick = Service.WindowManager.ToggleWindow<MainWindow>;
-        DtrEntry.SetVisibility(false);
+        _dtrEntry = _dtrBar.Get("Yo-kai Check");
+        _dtrEntry.OnClick = () => _windowManager.CreateOrToggle<MainWindow>();
+        _dtrEntry.Shown = false;
+
+        _framework.Update += OnFrameworkUpdate;
     }
 
     public void Dispose()
     {
-        Service.Framework.Update -= Framework_Update;
-        DtrEntry.Dispose();
+        _framework.Update -= OnFrameworkUpdate;
+        _dtrEntry.Remove();
+        GC.SuppressFinalize(this);
     }
 
-    private unsafe void Framework_Update(IFramework framework)
+    private unsafe void OnFrameworkUpdate(IFramework framework)
     {
         var minionId = Plugin.GetCurrentMinionId();
         var isWeaponUnlocked = IsWeaponUnlocked(minionId);
 
         void Reset()
         {
-            DtrEntry.SetVisibility(false);
-            LastMinionId = 0;
-            LastMedalCount = 0;
-            LastWeaponUnlockStatus = false;
+            _dtrEntry.Shown = false;
+            _lastMinionId = 0;
+            _lastMedalCount = 0;
+            _lastWeaponUnlockStatus = false;
         }
 
         if (minionId == 0 || isWeaponUnlocked)
@@ -62,49 +74,55 @@ public class DtrService : IDisposable
         if (!(DidMinionChange(minionId) || DidWeaponUnlockStatusChange(isWeaponUnlocked) || DidMedalCountChange(count)))
             return;
 
-        var tooltipBuilder = new StringBuilder();
-        tooltipBuilder.AppendLine(t("Plugin.DisplayName"));
-        tooltipBuilder.AppendLine(GetItemName(weaponInfo.Value.Medal));
-
-        var row = FindRow<YKW>(row => row?.Item.Row == weaponInfo.Value.Medal);
-        if (row != null)
+        var tooltipBuilder = _stringBuilderPool.Get();
+        try
         {
-            foreach (var location in row.Location)
-            {
-                if (location.Row != 0 && location.Value != null)
-                    tooltipBuilder.AppendLine("- " + GetSheetText<PlaceName>(location.Value!.PlaceName.Row, "Name"));
-            }
-        }
+            tooltipBuilder.AppendLine(_textService.Translate("Plugin.DisplayName"));
+            tooltipBuilder.AppendLine(_textService.GetItemName(weaponInfo.Value.Medal).ExtractText().StripSoftHyphen());
 
-        DtrEntry.SetText($"{count} / 10");
-        DtrEntry.Tooltip = tooltipBuilder.ToString().TrimEnd();
-        DtrEntry.SetVisibility(true);
+            if (_excelService.TryFindRow<YKW>(row => row.Item.RowId == weaponInfo.Value.Medal, out var row))
+            {
+                foreach (var location in row.Location)
+                {
+                    if (location.RowId != 0 && location.IsValid)
+                        tooltipBuilder.AppendLine("- " + _textService.GetPlaceName(location.Value!.PlaceName.RowId));
+                }
+            }
+
+            _dtrEntry.Text = $"{count} / 10";
+            _dtrEntry.Tooltip = tooltipBuilder.ToString().TrimEnd();
+            _dtrEntry.Shown = true;
+        }
+        finally
+        {
+            _stringBuilderPool.Return(tooltipBuilder);
+        }
     }
 
     private bool DidMinionChange(uint minionId)
     {
-        if (minionId == LastMinionId)
+        if (minionId == _lastMinionId)
             return false;
 
-        LastMinionId = minionId;
+        _lastMinionId = minionId;
         return true;
     }
 
     private bool DidMedalCountChange(int count)
     {
-        if (count == LastMedalCount)
+        if (count == _lastMedalCount)
             return false;
 
-        LastMedalCount = count;
+        _lastMedalCount = count;
         return true;
     }
 
     private unsafe bool DidWeaponUnlockStatusChange(bool isWeaponUnlocked)
     {
-        if (LastWeaponUnlockStatus == isWeaponUnlocked)
+        if (_lastWeaponUnlockStatus == isWeaponUnlocked)
             return false;
 
-        LastWeaponUnlockStatus = isWeaponUnlocked;
+        _lastWeaponUnlockStatus = isWeaponUnlocked;
         return true;
     }
 
