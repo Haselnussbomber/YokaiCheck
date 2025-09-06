@@ -30,7 +30,7 @@ public partial class DtrService : IDisposable
         _stringBuilderPool = new DefaultObjectPool<StringBuilder>(new StringBuilderPooledObjectPolicy()); ;
 
         _dtrEntry = _dtrBar.Get("Yo-kai Check");
-        _dtrEntry.OnClick = () => _windowManager.CreateOrToggle<MainWindow>();
+        _dtrEntry.OnClick = (btn) => _windowManager.CreateOrToggle<MainWindow>();
         _dtrEntry.Shown = false;
 
         _framework.Update += OnFrameworkUpdate;

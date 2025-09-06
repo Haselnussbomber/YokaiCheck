@@ -9,7 +9,6 @@ using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using HaselCommon.Graphics;
 using HaselCommon.Gui;
-using ImGuiNET;
 using Lumina.Excel.Sheets;
 
 namespace YokaiCheck.Windows;
@@ -22,7 +21,7 @@ public unsafe partial class MainWindow : SimpleWindow
     private readonly ItemService _itemService;
     private readonly WindowManager _windowManager;
     private readonly IClientState _clientState;
-    private readonly TextureService _textureService;
+    private readonly ITextureProvider _textureProvider;
     private readonly ImGuiContextMenuService _imGuiContextMenuService;
 
     [AutoPostConstruct]
@@ -240,13 +239,13 @@ public unsafe partial class MainWindow : SimpleWindow
             var gilHas = inventoryManager->GetGil();
             var gilNeed = Data.PORTRAIT_NEED_MGP;
             var color = gilHas >= gilNeed ? Color.Green : Color.Red;
-            ImGuiUtils.TextUnformattedColored(color, $"{gilHas:n0} / {gilNeed:n0} {SeIconChar.Gil.ToIconString()}");
+            ImGui.TextColored(color, $"{gilHas:n0} / {gilNeed:n0} {SeIconChar.Gil.ToIconString()}");
         }
     }
 
     private void DrawItem(Item item, float iconSize = 24, string key = "")
     {
-        _textureService.DrawIcon(item.Icon, iconSize);
+        _textureProvider.DrawIcon((uint)item.Icon, iconSize);
 
         _imGuiContextMenuService.Draw($"##{key}_ItemContextMenu{item.RowId}", builder => builder
             .AddTryOn(item.RowId)

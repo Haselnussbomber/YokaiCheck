@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- This .csproj is part of a mono-repo solution and shares dependencies with other projects. -->
 <Project Sdk="Dalamud.NET.Sdk/13.1.0">
   <!-- Project settings -->
   <PropertyGroup>
+    <AssemblyName>YokaiCheck</AssemblyName>
     <Version>1.2.0</Version>
     <OutputPath>..\bin\</OutputPath>
     <DefineConstants>$(DefineConstants);AUTOCTOR_EMBED_ATTRIBUTES</DefineConstants>
@@ -10,6 +12,7 @@
   <!-- Dalamud.NET.Sdk settings -->
   <PropertyGroup>
     <Use_Dalamud_Newtonsoft_Json>false</Use_Dalamud_Newtonsoft_Json>
+    <Use_Dalamud_FFXIVClientStructs>false</Use_Dalamud_FFXIVClientStructs>
   </PropertyGroup>
 
   <!-- Translations -->
@@ -29,8 +32,20 @@
     <PackageReference Include="Injectio" Version="5.0.0" PrivateAssets="all" />
   </ItemGroup>
 
+  <!-- FFXIVClientStructs -->
+  <PropertyGroup>
+    <InteropGenerator_InteropNamespace>$(AssemblyName)</InteropGenerator_InteropNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="InteropGenerator_InteropNamespace" />
+    <ProjectReference Include="..\..\libs\FFXIVClientStructs\InteropGenerator\InteropGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\libs\FFXIVClientStructs\FFXIVClientStructs\FFXIVClientStructs.csproj" Private="True" />
+    <ProjectReference Include="..\..\libs\FFXIVClientStructs\InteropGenerator.Runtime\InteropGenerator.Runtime.csproj" Private="True" />
+  </ItemGroup>
+
   <!-- HaselCommon -->
   <ItemGroup>
-    <ProjectReference Include="..\HaselCommon\HaselCommon\HaselCommon.csproj" />
+    <ProjectReference Include="..\..\libs\HaselCommon\HaselCommon\HaselCommon.csproj" />
   </ItemGroup>
 </Project>
