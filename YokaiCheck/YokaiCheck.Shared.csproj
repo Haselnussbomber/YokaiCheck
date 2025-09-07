@@ -4,6 +4,7 @@
   <!-- Project settings -->
   <PropertyGroup>
     <AssemblyName>YokaiCheck</AssemblyName>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
     <Version>1.2.0</Version>
     <OutputPath>..\bin\</OutputPath>
     <DefineConstants>$(DefineConstants);AUTOCTOR_EMBED_ATTRIBUTES</DefineConstants>
@@ -35,6 +36,7 @@
   <!-- FFXIVClientStructs -->
   <PropertyGroup>
     <InteropGenerator_InteropNamespace>$(AssemblyName)</InteropGenerator_InteropNamespace>
+    <DefineConstants>$(DefineConstants);CUSTOM_CS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
