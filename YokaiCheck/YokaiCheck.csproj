@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Dalamud.NET.Sdk/13.1.0">
+<Project Sdk="Dalamud.NET.Sdk/14.0.2">
   <!-- Project settings -->
   <PropertyGroup>
+    <Name>Yo-kai Check</Name>
     <Version>1.2.0</Version>
+    <Author>Haselnussbomber</Author>
+    <RepoUrl>https://github.com/Haselnussbomber/YokaiCheck</RepoUrl>
+    <Punchline>Tracking assistant for Yo-kai Watch rewards.</Punchline>
+    <Description>Yo-kai Check is a small plugin to assist you in tracking the rewards of the Yo-kai Watch event.</Description>
+    <IconUrl>https://raw.githubusercontent.com/Haselnussbomber/YokaiCheck/main/YokaiCheck/Assets/Icon.png</IconUrl>
+    <LoadRequiredState>1</LoadRequiredState>
+    <CanUnloadAsync>true</CanUnloadAsync>
+  </PropertyGroup>
+
+  <!-- Build settings -->
+  <PropertyGroup>
     <OutputPath>..\bin\</OutputPath>
     <DefineConstants>$(DefineConstants);AUTOCTOR_EMBED_ATTRIBUTES</DefineConstants>
   </PropertyGroup>

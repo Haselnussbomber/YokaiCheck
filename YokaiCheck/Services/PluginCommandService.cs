@@ -1,37 +1,49 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using HaselCommon.Services;
+using HaselCommon.Services.Commands;
+using Microsoft.Extensions.Hosting;
 using YokaiCheck.Windows;
 
 namespace YokaiCheck.Services;
 
-[RegisterTransient, AutoConstruct]
-public partial class CommandManager : IDisposable
+[RegisterSingleton<IHostedService>(Duplicate = DuplicateStrategy.Append), AutoConstruct]
+public partial class PluginCommandService : IHostedService
 {
     private readonly IDalamudPluginInterface _pluginInterface;
     private readonly WindowManager _windowManager;
     private readonly CommandService _commandService;
     private readonly IClientState _clientState;
+
     private bool _mainUiHandlerRegistered;
 
-    [AutoPostConstruct]
-    private void Initialize()
+    public Task StartAsync(CancellationToken cancellationToken)
     {
-        _commandService.Register("/yokai", "CommandHandlerHelpMessage", HandleCommand, autoEnable: true);
-
-        if (_clientState.IsLoggedIn) EnableMainUiHandler();
+        _commandService.AddCommand("yokai", cmd =>
+        {
+            cmd.WithHelpTextKey("CommandHandlerHelpMessage");
+            cmd.WithHandler(OnMainCommand);
+        });
 
         _clientState.Login += OnLogin;
         _clientState.Logout += OnLogout;
+
+        if (_clientState.IsLoggedIn)
+            EnableMainUiHandler();
+
+        return Task.CompletedTask;
     }
 
-    public void Dispose()
+    public Task StopAsync(CancellationToken cancellationToken)
     {
         DisableMainUiHandler();
 
         _clientState.Login -= OnLogin;
         _clientState.Logout -= OnLogout;
 
-        GC.SuppressFinalize(this);
+        return Task.CompletedTask;
     }
 
     private void OnLogin()
@@ -42,6 +54,11 @@ public partial class CommandManager : IDisposable
     private void OnLogout(int type, int code)
     {
         DisableMainUiHandler();
+    }
+
+    private void OnMainCommand(CommandContext ctx)
+    {
+        ToggleMainWindow();
     }
 
     private void EnableMainUiHandler()
@@ -60,11 +77,6 @@ public partial class CommandManager : IDisposable
             _pluginInterface.UiBuilder.OpenMainUi -= ToggleMainWindow;
             _mainUiHandlerRegistered = false;
         }
-    }
-
-    private void HandleCommand(string command, string arguments)
-    {
-        ToggleMainWindow();
     }
 
     private void ToggleMainWindow()

@@ -117,7 +117,7 @@ public partial class DtrService : IDisposable
         return true;
     }
 
-    private unsafe bool DidWeaponUnlockStatusChange(bool isWeaponUnlocked)
+    private bool DidWeaponUnlockStatusChange(bool isWeaponUnlocked)
     {
         if (_lastWeaponUnlockStatus == isWeaponUnlocked)
             return false;

@@ -2,35 +2,33 @@ using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using Microsoft.Extensions.DependencyInjection;
-using YokaiCheck.Services;
+using Microsoft.Extensions.Hosting;
 
 namespace YokaiCheck;
 
 public sealed class Plugin : IDalamudPlugin
 {
-    private readonly ServiceProvider _serviceProvider;
+    private readonly IHost _host;
 
     public Plugin(IDalamudPluginInterface pluginInterface, IFramework framework)
     {
-#if CUSTOM_CS
-        pluginInterface.InitializeCustomClientStructs();
-#endif
+        _host = new HostBuilder()
+            .UseContentRoot(pluginInterface.AssemblyLocation.Directory!.FullName)
+            .ConfigureServices(services =>
+            {
+                services.AddDalamud(pluginInterface);
+                services.AddHaselCommon();
+                services.AddYokaiCheck();
+            })
+            .Build();
 
-        _serviceProvider = new ServiceCollection()
-            .AddDalamud(pluginInterface)
-            .AddHaselCommon()
-            .AddYokaiCheck()
-            .BuildServiceProvider();
-
-        framework.RunOnFrameworkThread(() =>
-        {
-            _serviceProvider.GetRequiredService<CommandManager>();
-        });
+        framework.RunOnFrameworkThread(_host.Start);
     }
 
     void IDisposable.Dispose()
     {
-        _serviceProvider.Dispose();
+        _host.StopAsync().GetAwaiter().GetResult();
+        _host.Dispose();
     }
 
     public static unsafe uint GetCurrentMinionId()

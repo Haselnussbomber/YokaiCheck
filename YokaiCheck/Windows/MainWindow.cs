@@ -22,7 +22,6 @@ public unsafe partial class MainWindow : SimpleWindow
     private readonly WindowManager _windowManager;
     private readonly IClientState _clientState;
     private readonly ITextureProvider _textureProvider;
-    private readonly ImGuiContextMenuService _imGuiContextMenuService;
 
     [AutoPostConstruct]
     private void Initialize()
@@ -36,7 +35,7 @@ public unsafe partial class MainWindow : SimpleWindow
         };
     }
 
-    public override unsafe void Draw()
+    public override void Draw()
     {
         var style = ImGui.GetStyle();
         var itemInnerSpacing = style.ItemInnerSpacing;
@@ -59,7 +58,7 @@ public unsafe partial class MainWindow : SimpleWindow
         ImGui.SameLine();
 
         ImGui.SetCursorPosX(ImGui.GetContentRegionMax().X - ImGuiUtils.GetIconSize(FontAwesomeIcon.InfoCircle).X);
-        ImGuiUtils.Icon(FontAwesomeIcon.InfoCircle, Color.Grey3.ToUInt());
+        ImGuiUtils.Icon(FontAwesomeIcon.InfoCircle, Color.Text600.ToUInt());
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
@@ -171,7 +170,7 @@ public unsafe partial class MainWindow : SimpleWindow
                 if (hasSubweapon)
                 {
                     ImGui.SetCursorPos(new(textPosX, rowPosY + rowHeight / 2f - textOffset));
-                    ImGuiUtils.PushCursorY(rowHeight / 2f);
+                    ImCursor.Y += rowHeight / 2f;
                     ImGui.TextUnformatted(_textService.GetItemName(subweapon!.RowId).ExtractText().StripSoftHyphen());
                 }
             }
@@ -247,7 +246,7 @@ public unsafe partial class MainWindow : SimpleWindow
     {
         _textureProvider.DrawIcon((uint)item.Icon, iconSize);
 
-        _imGuiContextMenuService.Draw($"##{key}_ItemContextMenu{item.RowId}", builder => builder
+        ImGuiContextMenu.Draw($"##{key}_ItemContextMenu{item.RowId}", builder => builder
             .AddTryOn(item.RowId)
             .AddItemFinder(item.RowId)
             .AddCopyItemName(item.RowId)

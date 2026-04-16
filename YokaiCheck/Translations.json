@@ -20,6 +20,9 @@
     "de": "Konfiguration schließen"
   },
 
+  "MainWindow.Title": {
+    "en": "Yo-kai Check"
+  },
   "MainWindow.AchievementsNotLoaded": {
     "en": "Achievements not loaded!",
     "de": "Errungenschaften nicht geladen!"
