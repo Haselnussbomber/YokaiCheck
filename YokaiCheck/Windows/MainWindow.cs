@@ -28,7 +28,7 @@ public unsafe partial class MainWindow : SimpleWindow
     {
         Size = new Vector2(610, 810);
         SizeCondition = ImGuiCond.FirstUseEver;
-        SizeConstraints = new WindowSizeConstraints()
+        SizeConstraints = new()
         {
             MinimumSize = new Vector2(570, 200),
             MaximumSize = new Vector2(4069),
