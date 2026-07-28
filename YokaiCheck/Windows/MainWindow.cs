@@ -78,7 +78,7 @@ public unsafe partial class MainWindow : SimpleWindow
 
         DrawMinionWeaponTable(itemInnerSpacing, inventoryManager, uiState, achievementsLoded, hasAllWeapons, textHeight, rowHeight);
         DrawPortraitTable(inventoryManager, textHeight, rowHeight);
-        DrawSpecialShopTable(inventoryManager, textHeight, rowHeight);
+        DrawSpecialShopTable(textHeight, rowHeight);
 
         ImGui.Spacing();
         ImGui.Separator();
@@ -285,7 +285,7 @@ public unsafe partial class MainWindow : SimpleWindow
         }
     }
 
-    private void DrawSpecialShopTable(InventoryManager* inventoryManager, float textHeight, float rowHeight)
+    private void DrawSpecialShopTable(float textHeight, float rowHeight)
     {
         if (!_excelService.TryGetRow<SpecialShop>(Data.SPECIAL_SHOP_ID, out var specialShop))
             return;
