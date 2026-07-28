@@ -1,4 +1,6 @@
 using System.Numerics;
+using System.Reflection;
+using System.Threading.Tasks;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin.Services;
@@ -22,6 +24,7 @@ public unsafe partial class MainWindow : SimpleWindow
     private readonly IClientState _clientState;
     private readonly ITextureProvider _textureProvider;
     private readonly MapService _mapService;
+    private readonly IServiceProvider _serviceProvider;
 
     [AutoPostConstruct]
     private void Initialize()
@@ -76,6 +79,40 @@ public unsafe partial class MainWindow : SimpleWindow
         DrawMinionWeaponTable(itemInnerSpacing, inventoryManager, uiState, achievementsLoded, hasAllWeapons, textHeight, rowHeight);
         DrawPortraitTable(inventoryManager, textHeight, rowHeight);
         DrawSpecialShopTable(inventoryManager, textHeight, rowHeight);
+
+        ImGui.Spacing();
+        ImGui.Separator();
+        ImGui.Spacing();
+
+        var cursorPos = ImCursor.Position;
+        var contentAvail = ImStyle.ContentRegionAvail;
+
+        ImGuiUtils.DrawLink("GitHub", _textService.Translate("GitHubLink.Tooltip"), "https://github.com/Haselnussbomber/YokaiCheck");
+        ImGui.SameLine();
+        ImGui.Text("•");
+        ImGui.SameLine();
+        ImGuiUtils.DrawLink("Sponsor", _textService.Translate("SponsorLink.Tooltip"), "https://github.com/sponsors/Haselnussbomber");
+        ImGui.SameLine();
+        ImGui.Text("•");
+        ImGui.SameLine();
+        ImGui.Text(_textService.Translate("LicensesLink.Label"));
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+            if (ImGui.IsMouseReleased(ImGuiMouseButton.Left) && _serviceProvider.TryGetService<LicensesWindow>(out var licensesWindow))
+            {
+                Task.Run(licensesWindow.Toggle);
+            }
+        }
+
+        var version = Assembly.GetExecutingAssembly().GetName().Version;
+        if (version != null)
+        {
+            var versionString = "v" + version.ToString(3);
+            ImGui.SameLine();
+            ImCursor.X = cursorPos.X + contentAvail.X - ImGui.CalcTextSize(versionString).X;
+            ImGui.TextDisabled(versionString);
+        }
     }
 
     private void DrawMinionWeaponTable(Vector2 itemInnerSpacing, InventoryManager* inventoryManager, UIState* uiState, bool achievementsLoded, bool hasAllWeapons, float textHeight, float rowHeight)

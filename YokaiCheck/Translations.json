@@ -2,6 +2,25 @@
   "Plugin.DisplayName": {
     "en": "Yo-kai Check"
   },
+  "MainWindow.Title": {
+    "en": "Yo-kai Check"
+  },
+  "LicensesWindow.Title": {
+    "en": "Yo-kai Check - Licenses",
+    "de": "Yo-kai Check - Lizenzen"
+  },
+  "GitHubLink.Tooltip": {
+    "en": "Visit the MogMogCheck GitHub Repository",
+    "de": "Zum MogMogCheck GitHub Repository"
+  },
+  "SponsorLink.Tooltip": {
+    "en": "Support me on GitHub Sponsors",
+    "de": "Unterstütze mich auf GitHub Sponsors"
+  },
+  "LicensesLink.Label": {
+    "en": "Licenses",
+    "de": "Lizenzen"
+  },
   "CommandHandlerHelpMessage": {
     "en": "Open Window",
     "de": "Öffne Fenster"
@@ -20,9 +39,6 @@
     "de": "Konfiguration schließen"
   },
 
-  "MainWindow.Title": {
-    "en": "Yo-kai Check"
-  },
   "MainWindow.AchievementsNotLoaded": {
     "en": "Achievements not loaded!",
     "de": "Errungenschaften nicht geladen!"
