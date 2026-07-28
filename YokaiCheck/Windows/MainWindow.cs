@@ -235,10 +235,10 @@ public unsafe partial class MainWindow : SimpleWindow
         {
             ImGui.TableNextColumn();
             ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
-            var gilHas = inventoryManager->GetGil();
-            var gilNeed = Data.PORTRAIT_NEED_MGP;
-            var color = gilHas >= gilNeed ? Color.Green : Color.Red;
-            ImGui.TextColored(color, $"{gilHas:n0} / {gilNeed:n0} {SeIconChar.Gil.ToIconString()}");
+            var mgpHas = inventoryManager->GetGoldSaucerCoin();
+            var mgpNeed = Data.PORTRAIT_NEED_MGP;
+            var color = mgpHas >= mgpNeed ? Color.Green : Color.Red;
+            ImGui.TextColored(color, $"{mgpHas:n0} / {mgpNeed:n0} MGP");
         }
     }
 
