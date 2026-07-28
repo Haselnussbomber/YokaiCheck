@@ -61,5 +61,9 @@
   },
   "MainWindow.IncompleteWeaponMedallionCounter": {
     "en": "{0} / 10"
+  },
+  "MainWindow.DisplayVendorOnMap.Tooltip": {
+    "en": "Display vendor on Map\n{0} ({1})",
+    "de": "Händler auf Karte anzeigen\n{0} ({1})"
   }
 }

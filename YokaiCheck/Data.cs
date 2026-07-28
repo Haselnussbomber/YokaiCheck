@@ -36,6 +36,7 @@ public static class Data
     public static uint PORTRAIT_ITEM_CATALOG_ID = 41797;
     public static int PORTRAIT_MGP_CATALOG_ID = 29;
     public static int PORTRAIT_NEED_MGP = 20000;
+    public static uint SPECIAL_SHOP_ID = 1771022;
 
     public static MinionInfo? GetMinionInfoByMinionId(uint minionId)
         => DataTable.TryGetFirst(tuple => tuple.Item1.Minion == minionId, out var tuple) ? tuple.Item1 : null;

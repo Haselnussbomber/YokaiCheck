@@ -1,5 +1,4 @@
 using System.Numerics;
-using Dalamud.Game.Text;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin.Services;
@@ -22,11 +21,12 @@ public unsafe partial class MainWindow : SimpleWindow
     private readonly WindowManager _windowManager;
     private readonly IClientState _clientState;
     private readonly ITextureProvider _textureProvider;
+    private readonly MapService _mapService;
 
     [AutoPostConstruct]
     private void Initialize()
     {
-        Size = new Vector2(610, 810);
+        Size = new Vector2(610, 750);
         SizeCondition = ImGuiCond.FirstUseEver;
         SizeConstraints = new()
         {
@@ -75,6 +75,7 @@ public unsafe partial class MainWindow : SimpleWindow
 
         DrawMinionWeaponTable(itemInnerSpacing, inventoryManager, uiState, achievementsLoded, hasAllWeapons, textHeight, rowHeight);
         DrawPortraitTable(inventoryManager, textHeight, rowHeight);
+        DrawSpecialShopTable(inventoryManager, textHeight, rowHeight);
     }
 
     private void DrawMinionWeaponTable(Vector2 itemInnerSpacing, InventoryManager* inventoryManager, UIState* uiState, bool achievementsLoded, bool hasAllWeapons, float textHeight, float rowHeight)
@@ -217,7 +218,7 @@ public unsafe partial class MainWindow : SimpleWindow
 
         var portraitUnlocked = _itemService.IsUnlocked(portraitItem.RowId);
 
-        using var table = ImRaii.Table("YKWPortraitTable", !portraitUnlocked ? 2 : 1);
+        using var table = ImRaii.Table("YKWPortraitTable", 2);
         if (!table) return;
 
         ImGui.TableNextRow();
@@ -231,12 +232,63 @@ public unsafe partial class MainWindow : SimpleWindow
         ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
         ImGui.TextUnformatted(_textService.GetItemName(portraitItem.RowId).ExtractText().StripSoftHyphen());
 
+        ImGui.TableNextColumn();
+        ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
+        var mgpNeed = Data.PORTRAIT_NEED_MGP;
+
         if (!portraitUnlocked)
         {
+            var mgpHas = inventoryManager->GetGoldSaucerCoin();
+            var color = mgpHas >= mgpNeed ? Color.Green : Color.Red;
+            ImGui.TextColored(color, $"{mgpHas:n0} / {mgpNeed:n0} MGP");
+        }
+        else
+        {
+            ImGui.TextColored(Color.Text600, $"{mgpNeed:n0} MGP");
+        }
+    }
+
+    private void DrawSpecialShopTable(InventoryManager* inventoryManager, float textHeight, float rowHeight)
+    {
+        if (!_excelService.TryGetRow<SpecialShop>(Data.SPECIAL_SHOP_ID, out var specialShop))
+            return;
+
+        ImGuiUtils.DrawPaddedSeparator();
+
+        using var table = ImRaii.Table("YKWSpecialShopTable", 2);
+        if (!table) return;
+
+        foreach (var item in specialShop.Item)
+        {
+            if (item.ReceiveItems[0].Item.RowId == 0 || !item.ReceiveItems[0].Item.IsValid)
+                continue;
+
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn();
+            var rowPosY = ImGui.GetCursorPosY();
+            ImCursor.X -= rowHeight / 4.2f;
+            _textureProvider.DrawIcon(60935, rowHeight);
+            if (ImGui.IsItemHovered() && _excelService.TryGetRow<Level>(6289315, out var level))
+            {
+                ImGui.SetTooltip(_textService.Translate("MainWindow.DisplayVendorOnMap.Tooltip", _textService.GetPlaceName(level.Map.Value.PlaceName.RowId), _mapService.GetHumanReadableCoords(level)));
+                ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+                if (ImGui.IsItemClicked())
+                    _mapService.OpenMap(level);
+            }
+
+            ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
+            ImCursor.X = ImGuiUtils.GetIconSize(FontAwesomeIcon.Check).Y;
+            ImGui.SameLine(0, 0);
+            ImGui.SetCursorPosY(rowPosY);
+            DrawItem(item.ReceiveItems[0].Item.Value, rowHeight);
+            ImGui.SameLine();
+            ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
+            ImGui.TextUnformatted(_textService.GetItemName(item.ReceiveItems[0].Item.Value.RowId).ExtractText().StripSoftHyphen());
+
             ImGui.TableNextColumn();
             ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
-            var mgpHas = inventoryManager->GetGoldSaucerCoin();
-            var mgpNeed = Data.PORTRAIT_NEED_MGP;
+            var mgpHas = InventoryManager.Instance()->GetGoldSaucerCoin();
+            var mgpNeed = item.ItemCosts[0].CurrencyCost;
             var color = mgpHas >= mgpNeed ? Color.Green : Color.Red;
             ImGui.TextColored(color, $"{mgpHas:n0} / {mgpNeed:n0} MGP");
         }
