@@ -195,7 +195,6 @@ public unsafe partial class MainWindow : SimpleWindow
                 ImGui.SameLine();
 
                 var weaponName = _textService.GetItemName(weapon.RowId).ExtractText().StripSoftHyphen();
-                var weaponNameSize = ImGui.CalcTextSize(weaponName);
 
                 var textOffset = hasSubweapon
                     ? textHeight
