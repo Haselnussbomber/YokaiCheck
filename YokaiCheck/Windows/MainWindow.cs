@@ -19,7 +19,6 @@ public unsafe partial class MainWindow : SimpleWindow
     private readonly TextService _textService;
     private readonly ExcelService _excelService;
     private readonly ItemService _itemService;
-    private readonly WindowManager _windowManager;
     private readonly IClientState _clientState;
     private readonly ITextureProvider _textureProvider;
     private readonly MapService _mapService;
