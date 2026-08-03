@@ -4,12 +4,11 @@
 <br/>
 <hr>
 
-You will not find this plugin in the official plugin repository.  
-However, you're free to add my custom repository to get updates whenever I release a new version:  
-https://raw.githubusercontent.com/Haselnussbomber/MyDalamudPlugins/main/repo.json
+This plugin shows a list of minions, weapons and how many medals you still need.  
+When you have a minion summoned, the amount of medals you have and need for the weapon is displayed in the Server Info Bar.
 
-Open with `/yokai`.
+Open with `/yokai` or `/yokaicheck`.
 
 ---
 
-![Screenshot](https://github.com/Haselnussbomber/YokaiCheck/assets/96642047/5394572a-5028-40fb-af22-8b94247df813)
+<img width="584" height="949" alt="Screenshot" src="https://github.com/user-attachments/assets/4e306eb5-d36f-4025-aeb7-7beee3cb98c8" />
