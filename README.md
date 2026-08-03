@@ -4,7 +4,9 @@
 <br/>
 <hr>
 
-This plugin shows a list of minions, weapons and how many medals you still need.  
+This plugin is available in the Dalamud plugin repository!
+
+It shows a list of minions, weapons and how many medals you still need.  
 When you have a minion summoned, the amount of medals you have and need for the weapon is displayed in the Server Info Bar.
 
 Open with `/yokai` or `/yokaicheck`.
