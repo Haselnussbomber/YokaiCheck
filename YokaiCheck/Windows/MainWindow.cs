@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin.Services;
-using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -194,7 +193,7 @@ public unsafe partial class MainWindow : SimpleWindow
 
                 ImGui.SameLine();
 
-                var weaponName = _textService.GetItemName(weapon.RowId).ExtractText().StripSoftHyphen();
+                var weaponName = _textService.GetItemName(weapon.RowId).ToString();
 
                 var textOffset = hasSubweapon
                     ? textHeight
@@ -208,7 +207,7 @@ public unsafe partial class MainWindow : SimpleWindow
                 {
                     ImGui.SetCursorPos(new(textPosX, rowPosY + rowHeight / 2f - textOffset));
                     ImCursor.Y += rowHeight / 2f;
-                    ImGui.TextUnformatted(_textService.GetItemName(subweapon!.RowId).ExtractText().StripSoftHyphen());
+                    ImGui.TextUnformatted(_textService.GetItemName(subweapon!.RowId).ToString());
                 }
             }
 
@@ -266,7 +265,7 @@ public unsafe partial class MainWindow : SimpleWindow
         DrawItem(portraitItem, rowHeight);
         ImGui.SameLine();
         ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
-        ImGui.TextUnformatted(_textService.GetItemName(portraitItem.RowId).ExtractText().StripSoftHyphen());
+        ImGui.TextUnformatted(_textService.GetItemName(portraitItem.RowId).ToString());
 
         ImGui.TableNextColumn();
         ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
@@ -319,7 +318,7 @@ public unsafe partial class MainWindow : SimpleWindow
             DrawItem(item.ReceiveItems[0].Item.Value, rowHeight);
             ImGui.SameLine();
             ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
-            ImGui.TextUnformatted(_textService.GetItemName(item.ReceiveItems[0].Item.Value.RowId).ExtractText().StripSoftHyphen());
+            ImGui.TextUnformatted(_textService.GetItemName(item.ReceiveItems[0].Item.Value.RowId).ToString());
 
             ImGui.TableNextColumn();
             ImGui.SetCursorPosY(rowPosY + rowHeight / 2f - textHeight / 2f);
