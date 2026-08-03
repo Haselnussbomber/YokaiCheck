@@ -2,7 +2,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using HaselCommon.Services;
 using HaselCommon.Services.Commands;
 using Microsoft.Extensions.Hosting;
 using YokaiCheck.Windows;
@@ -22,6 +21,12 @@ public partial class PluginCommandService : IHostedService
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _commandService.AddCommand("yokai", cmd =>
+        {
+            cmd.WithHelpTextKey("CommandHandlerHelpMessage");
+            cmd.WithHandler(OnMainCommand);
+        });
+
+        _commandService.AddCommand("yokaicheck", cmd =>
         {
             cmd.WithHelpTextKey("CommandHandlerHelpMessage");
             cmd.WithHandler(OnMainCommand);
