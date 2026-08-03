@@ -169,8 +169,8 @@ public unsafe partial class MainWindow : SimpleWindow
 
             // Weapon
             ImGui.TableNextColumn();
+            if (_excelService.TryGetRow<Item>(weaponInfo.Weapon, out var weapon))
             {
-                _excelService.TryGetRow<Item>(weaponInfo.Weapon, out var weapon);
                 var hasSubweapon = _excelService.TryGetRow<Item>(weaponInfo.Subweapon, out var subweapon) && weaponInfo.Subweapon != 0;
 
                 if (achievementsLoded)
