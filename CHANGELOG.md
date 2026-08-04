@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.1] (2026-07-28)
+
+- **Fixed:** The plugin may have errored on load.
+
 ## [1.3.0] (2026-07-28)
 
 - **Added:** Support for new items sold by the vendor in the Gold Saucer.
@@ -22,7 +26,8 @@
 
 First release. 🥳
 
-[Unreleased]: https://github.com/Haselnussbomber/YokaiCheck/compare/main...dev
+[Unreleased]: https://github.com/Haselnussbomber/YokaiCheck/compare/v1.3.1...main
+[1.3.1]: https://github.com/Haselnussbomber/YokaiCheck/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/Haselnussbomber/YokaiCheck/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/Haselnussbomber/YokaiCheck/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Haselnussbomber/YokaiCheck/compare/v1.0.0...v1.1.0
