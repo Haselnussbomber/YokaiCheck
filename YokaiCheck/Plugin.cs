@@ -17,8 +17,6 @@ public partial class Plugin : IAsyncDalamudPlugin
 
     public Task LoadAsync(CancellationToken cancellationToken)
     {
-        _pluginInterface.InitializeCustomClientStructs();
-
         _host = new HostBuilder()
             .UseContentRoot(_pluginInterface.AssemblyLocation.Directory!.FullName)
             .ConfigureServices(services =>
