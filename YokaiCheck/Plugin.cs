@@ -1,7 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Dalamud.Plugin;
-using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,13 +11,18 @@ namespace YokaiCheck;
 public partial class Plugin : IAsyncDalamudPlugin
 {
     private readonly IDalamudPluginInterface _pluginInterface;
-    private readonly IFramework _framework;
-    private IHost? _host;
+    private IHost _host;
 
-    public Task LoadAsync(CancellationToken cancellationToken)
+    [AutoPostConstruct]
+    private void Initialize()
     {
         _host = new HostBuilder()
             .UseContentRoot(_pluginInterface.AssemblyLocation.Directory!.FullName)
+            .ConfigureHostOptions(options =>
+            {
+                options.ServicesStartConcurrently = true;
+                options.ServicesStopConcurrently = true;
+            })
             .ConfigureServices(services =>
             {
                 services.AddDalamud(_pluginInterface);
@@ -26,13 +30,23 @@ public partial class Plugin : IAsyncDalamudPlugin
                 services.AddYokaiCheck();
             })
             .Build();
-
-        return _host.StartOnFrameworkThread(_framework, cancellationToken);
     }
 
-    public ValueTask DisposeAsync()
+    public Task LoadAsync(CancellationToken cancellationToken)
     {
-        return _host?.StopOnFrameworkThread(_framework) ?? ValueTask.CompletedTask;
+        return _host.StartAsync(cancellationToken);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await _host.StopAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            _host.Dispose();
+        }
     }
 
     public static unsafe uint GetCurrentMinionId()
