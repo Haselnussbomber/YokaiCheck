@@ -2,7 +2,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
-using HaselCommon.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -26,7 +25,6 @@ public partial class Plugin : IAsyncDalamudPlugin
             })
             .ConfigureServices(services =>
             {
-                services.AddSingleton(new PluginAssembly(GetType().Assembly));
                 services.AddSingleton(_pluginInterface);
                 services.AddHaselCommon();
                 services.AddYokaiCheck();
