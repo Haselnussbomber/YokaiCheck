@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using HaselCommon.Services.Commands;
-using Microsoft.Extensions.Hosting;
 using YokaiCheck.Windows;
 
 namespace YokaiCheck.Services;

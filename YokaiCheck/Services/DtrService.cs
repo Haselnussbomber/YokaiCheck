@@ -40,7 +40,6 @@ public partial class DtrService : IDisposable
     {
         _framework.Update -= OnFrameworkUpdate;
         _dtrEntry.Remove();
-        GC.SuppressFinalize(this);
     }
 
     private unsafe void OnFrameworkUpdate(IFramework framework)
